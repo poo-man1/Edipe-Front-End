@@ -3,502 +3,961 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edipee — Edit PDFs Freely</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <title>Edi — AI-Powered PDF Editor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --bg: #05060f;
+      --blue: #3d7fff;
+      --blue-bright: #5c96ff;
+      --indigo: #6366f1;
+      --cyan: #22d3ee;
+      --violet: #a78bfa;
+      --glow: rgba(61,127,255,0.25);
+      --text: #e8eeff;
+      --muted: #8892b0;
+      --border: rgba(61,127,255,0.2);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
-      background: radial-gradient(circle at 10% 20%, #0a0c1a, #03050b);
-      font-family: 'Inter', sans-serif;
-      color: #eef2ff;
-      line-height: 1.4;
-      scroll-behavior: smooth;
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
       min-height: 100vh;
-      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* BG ORBS */
+    .orb { position: fixed; border-radius: 50%; filter: blur(110px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 650px; height: 650px; top: -180px; left: -120px; background: radial-gradient(circle, rgba(61,127,255,0.17) 0%, transparent 65%); animation: drift 16s ease-in-out infinite; }
+    .orb-2 { width: 480px; height: 480px; bottom: -80px; right: -80px; background: radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 65%); animation: drift 20s ease-in-out infinite reverse; }
+    .orb-3 { width: 320px; height: 320px; top: 45%; left: 58%; background: radial-gradient(circle, rgba(34,211,238,0.09) 0%, transparent 65%); animation: drift 26s ease-in-out infinite 4s; }
+    @keyframes drift {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(25px,-25px) scale(1.04); }
+      66% { transform: translate(-18px,18px) scale(0.96); }
     }
 
     body::before {
       content: '';
-      position: fixed;
-      top: -20%; left: -10%;
-      width: 80%; height: 80%;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(0,0,0,0) 70%);
-      filter: blur(80px);
+      position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(61,127,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(61,127,255,0.035) 1px, transparent 1px);
+      background-size: 55px 55px;
       z-index: 0; pointer-events: none;
     }
 
-    body::after {
-      content: '';
-      position: fixed;
-      bottom: -10%; right: -5%;
-      width: 70%; height: 70%;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 70%);
-      filter: blur(100px);
-      z-index: 0; pointer-events: none;
-    }
+    .container { max-width: 1260px; margin: 0 auto; padding: 2rem 2.5rem; position: relative; z-index: 2; }
 
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 2rem;
-      position: relative;
-      z-index: 2;
-    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0d1e; }
+    ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
 
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #1e293b; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
-
-    /* NAVBAR */
+    /* ===== NAVBAR ===== */
     .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.2rem;
-      margin-bottom: 3rem;
-      padding: 1rem 1.8rem;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(12px);
-      border-radius: 80px;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      margin-bottom: 3.5rem;
+      padding: 0.85rem 1.6rem;
+      background: rgba(9,11,28,0.65);
+      backdrop-filter: blur(22px);
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
     }
 
-    .logo h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #93c5fd, #3b82f6);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; color: white;
+      box-shadow: 0 4px 16px var(--glow);
+    }
+    .logo-text h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.55rem; font-weight: 800;
+      background: linear-gradient(135deg, #fff 20%, var(--blue-bright));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      line-height: 1;
+    }
+    .logo-text span { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .nav-tabs {
+      display: flex; gap: 0.3rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 60px; padding: 4px;
+      border: 1px solid var(--border);
+    }
+    .nav-tab {
+      padding: 0.42rem 1rem; border-radius: 50px;
+      font-size: 0.8rem; font-weight: 500; color: var(--muted);
+      cursor: pointer; transition: all 0.2s; white-space: nowrap; user-select: none;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active {
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: white; box-shadow: 0 4px 14px var(--glow);
     }
 
-    .logo span {
-      font-size: 0.7rem;
-      color: #93c5fd;
-      display: block;
+    .ai-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0.38rem 0.9rem;
+      background: linear-gradient(135deg, rgba(34,211,238,0.1), rgba(61,127,255,0.1));
+      border: 1px solid rgba(34,211,238,0.3);
+      border-radius: 50px; font-size: 0.74rem; font-weight: 600; color: var(--cyan);
     }
+    .ai-dot { width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
-    .tagline {
-      color: #bfdbfe;
-      font-weight: 600;
-      background: rgba(59, 130, 246, 0.2);
-      padding: 0.5rem 1.2rem;
-      border-radius: 40px;
-      font-size: 0.85rem;
-      border: 1px solid rgba(59, 130, 246, 0.5);
+    /* ===== HERO ===== */
+    .hero { text-align: center; padding: 1.5rem 0 3rem; }
+
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0.48rem 1.2rem;
+      background: rgba(61,127,255,0.08);
+      border: 1px solid rgba(61,127,255,0.35);
+      border-radius: 60px; font-size: 0.78rem; font-weight: 600; color: var(--blue-bright);
+      margin-bottom: 2rem;
+      animation: glowPill 3s ease-in-out infinite;
     }
-
-    /* HERO */
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-
-    .hero-badge {
-      background: rgba(59, 130, 246, 0.2);
-      padding: 0.5rem 1.5rem;
-      border-radius: 60px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #93c5fd;
-      margin-bottom: 1.5rem;
-      border: 1px solid rgba(59, 130, 246, 0.5);
-      animation: pulseGlow 2s infinite;
-    }
-
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
-      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    @keyframes glowPill {
+      0%,100% { box-shadow: 0 0 0 0 rgba(61,127,255,0.25); }
+      50% { box-shadow: 0 0 18px 2px rgba(61,127,255,0.15); }
     }
 
     .hero h2 {
-      font-size: 3.5rem;
-      font-weight: 800;
-      max-width: 850px;
-      background: linear-gradient(to right, #ffffff, #bfdbfe, #93c5fd);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      margin-bottom: 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+      font-weight: 800; line-height: 1.08;
+      max-width: 860px; margin: 0 auto 1.4rem;
+      background: linear-gradient(160deg, #ffffff 20%, #c7d6ff 50%, var(--blue-bright) 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
     }
 
-    .hero-desc {
-      font-size: 1.2rem;
-      color: #cbd5e6;
-      max-width: 580px;
-      margin-bottom: 2rem;
+    .hero-sub {
+      font-size: 1.1rem; color: #a0aec0; max-width: 540px; margin: 0 auto 2.5rem;
+      font-weight: 300; line-height: 1.7;
     }
 
-    .btn-start {
-      background: linear-gradient(105deg, #2563eb 0%, #4f46e5 100%);
-      padding: 1rem 2.8rem;
-      border-radius: 60px;
-      font-weight: 700;
-      font-size: 1.2rem;
-      color: white;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
-    .btn-start:hover {
-      transform: scale(1.03) translateY(-3px);
-      box-shadow: 0 18px 30px rgba(59, 130, 246, 0.7);
+    .btn-primary {
+      background: linear-gradient(105deg, #2563eb 0%, var(--indigo) 100%);
+      padding: 0.95rem 2.4rem; border-radius: 60px;
+      font-weight: 700; font-size: 1rem; color: white;
+      display: inline-flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: all 0.28s ease;
+      box-shadow: 0 10px 28px rgba(61,127,255,0.45);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-family: inherit;
     }
+    .btn-primary:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 18px 36px rgba(61,127,255,0.6); }
 
-    /* UPLOAD AREA */
-    .upload-area {
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(16px);
-      border: 2px dashed rgba(59, 130, 246, 0.5);
+    .btn-secondary {
+      padding: 0.95rem 2.4rem; border-radius: 60px;
+      font-weight: 600; font-size: 1rem; color: var(--blue-bright);
+      display: inline-flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: all 0.25s;
+      border: 1px solid rgba(61,127,255,0.4);
+      background: rgba(61,127,255,0.07);
+      font-family: inherit;
+    }
+    .btn-secondary:hover { background: rgba(61,127,255,0.15); border-color: var(--blue); transform: translateY(-2px); }
+
+    /* ===== UPLOAD ZONE ===== */
+    .upload-zone {
+      background: rgba(10,13,30,0.55);
+      backdrop-filter: blur(18px);
+      border: 2px dashed rgba(61,127,255,0.4);
       border-radius: 2rem;
-      padding: 3rem 2rem;
+      padding: 3.5rem 2rem;
       text-align: center;
-      margin: 2rem 0 4rem;
+      margin: 2.5rem 0;
       cursor: pointer;
       transition: all 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .upload-zone::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(61,127,255,0.06) 0%, transparent 65%);
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .upload-zone:hover { border-color: var(--blue); transform: scale(1.005); }
+    .upload-zone:hover::before { opacity: 1; }
+    .upload-zone.drag-over { border-color: var(--cyan); background: rgba(34,211,238,0.06); transform: scale(1.01); }
+
+    .upload-icon-wrap {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, rgba(61,127,255,0.15), rgba(99,102,241,0.15));
+      border: 1px solid rgba(61,127,255,0.3);
+      border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem; color: var(--blue);
+      margin: 0 auto 1.4rem;
+      transition: all 0.3s;
+    }
+    .upload-zone:hover .upload-icon-wrap {
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: white; box-shadow: 0 12px 30px var(--glow); transform: scale(1.05);
+    }
+    .upload-zone h3 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .upload-zone p { color: var(--muted); font-size: 0.88rem; }
+    .upload-zone input[type="file"] { display: none; }
+
+    .upload-formats {
+      display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 1.2rem;
+    }
+    .fmt-chip {
+      padding: 0.28rem 0.7rem; border-radius: 30px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.72rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em;
     }
 
-    .upload-area:hover {
-      border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.7);
-      transform: scale(1.01);
+    /* ===== TOOL OPTIONS PANEL ===== */
+    .options-panel {
+      background: rgba(10,13,30,0.6);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      padding: 2rem;
+      margin: 2rem 0;
+      position: relative; z-index: 5;
+    }
+    .options-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .options-header h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem; font-weight: 700;
+    }
+    .options-header .tag {
+      padding: 0.25rem 0.7rem; border-radius: 30px;
+      background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
+      font-size: 0.7rem; font-weight: 600; color: var(--cyan);
     }
 
-    .upload-icon {
-      font-size: 3rem;
-      color: #3b82f6;
-      margin-bottom: 1rem;
+    .options-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
     }
 
-    .upload-area h3 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
+    .option-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1.1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 1rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-item:hover { background: rgba(61,127,255,0.07); border-color: rgba(61,127,255,0.3); }
+    .option-item.active { background: rgba(61,127,255,0.1); border-color: rgba(61,127,255,0.4); }
+
+    .opt-left { display: flex; align-items: center; gap: 10px; }
+    .opt-icon { font-size: 1rem; color: var(--blue-bright); width: 20px; text-align: center; }
+    .opt-label { font-size: 0.88rem; font-weight: 500; }
+
+    /* Toggle */
+    .toggle { width: 38px; height: 21px; background: rgba(255,255,255,0.12); border-radius: 30px; position: relative; transition: background 0.25s; flex-shrink: 0; }
+    .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; background: white; border-radius: 50%; transition: transform 0.25s; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    .toggle.on { background: linear-gradient(90deg, var(--blue), var(--indigo)); }
+    .toggle.on::after { transform: translateX(17px); }
+
+    /* Editable text inputs */
+    .option-editable {
+      padding: 0.85rem 1.1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 1rem; transition: all 0.2s;
+      position: relative; z-index: 10;
+    }
+    .option-editable:hover { border-color: rgba(61,127,255,0.3); }
+    .option-editable label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px; cursor: default; }
+    .option-editable input, .option-editable select {
+      width: 100%; background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(61,127,255,0.25); border-radius: 8px;
+      padding: 0.5rem 0.8rem; color: var(--text);
+      font-family: inherit; font-size: 0.88rem;
+      outline: none; transition: border-color 0.2s;
+      cursor: text; position: relative; z-index: 11;
+      -webkit-appearance: none; appearance: none;
+    }
+    .option-editable select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892b0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.8rem center; padding-right: 2.2rem; }
+    .option-editable input:focus, .option-editable select:focus { border-color: var(--blue); background: rgba(61,127,255,0.08); box-shadow: 0 0 0 3px rgba(61,127,255,0.12); }
+    .option-editable select option { background: #111827; color: var(--text); }
+
+    /* Range slider */
+    .option-slider { padding: 0.85rem 1.1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 1rem; position: relative; z-index: 10; }
+    .option-slider label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; display: flex; justify-content: space-between; margin-bottom: 10px; cursor: default; }
+    .option-slider label span { color: var(--blue-bright); font-size: 0.82rem; font-weight: 700; }
+    input[type="range"] { width: 100%; accent-color: var(--blue); height: 5px; cursor: pointer; position: relative; z-index: 11; display: block; }
+
+    /* ===== FEATURES ===== */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem; font-weight: 800;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 30%, var(--blue-bright));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
     }
 
-    .upload-area p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-    }
-
-    .upload-area input[type="file"] {
-      display: none;
-    }
-
-    /* FEATURES */
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 1.8rem;
-      margin: 3rem 0 4rem;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 1.2rem;
+      margin: 1rem 0 3rem;
     }
 
     .feature-card {
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(10,13,30,0.55);
       backdrop-filter: blur(16px);
-      border-radius: 2rem;
-      padding: 1.8rem 1.2rem;
+      border-radius: 1.6rem;
+      padding: 1.6rem 1.2rem;
       text-align: center;
-      transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      box-shadow: 0 15px 35px -10px rgba(0,0,0,0.3);
+      transition: all 0.32s cubic-bezier(0.2,0.9,0.4,1.1);
+      border: 1px solid var(--border);
+      cursor: pointer; position: relative; overflow: hidden;
     }
-
-    .feature-card:hover {
-      transform: translateY(-8px);
-      border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.7);
-      box-shadow: 0 25px 40px -12px rgba(59, 130, 246, 0.3);
+    .feature-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(61,127,255,0.1) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
     }
+    .feature-card:hover { transform: translateY(-7px); border-color: rgba(61,127,255,0.5); box-shadow: 0 20px 40px -10px rgba(61,127,255,0.25); }
+    .feature-card:hover::after { opacity: 1; }
 
-    .icon-circle {
-      background: linear-gradient(145deg, rgba(59,130,246,0.2), rgba(99,102,241,0.2));
-      width: 70px; height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.2rem;
-      border-radius: 30px;
-      font-size: 2rem;
-      color: #93c5fd;
-      border: 1px solid rgba(59, 130, 246, 0.5);
-      transition: 0.2s;
+    .feat-icon {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.1rem;
+      border-radius: 20px; font-size: 1.8rem; color: var(--blue-bright);
+      background: linear-gradient(145deg, rgba(61,127,255,0.12), rgba(99,102,241,0.12));
+      border: 1px solid rgba(61,127,255,0.3);
+      transition: all 0.25s;
     }
+    .feature-card:hover .feat-icon { background: linear-gradient(145deg, var(--blue), var(--indigo)); color: white; transform: scale(1.08); box-shadow: 0 8px 24px var(--glow); }
 
-    .feature-card:hover .icon-circle {
-      color: white;
-      background: linear-gradient(145deg, #2563eb, #4f46e5);
-      transform: scale(1.05);
+    .feature-card h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feature-card p { color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+
+    .feat-badge {
+      display: inline-block; margin-top: 0.6rem;
+      padding: 0.2rem 0.6rem; border-radius: 20px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
     }
+    .feat-badge.live { background: rgba(34,211,238,0.12); color: var(--cyan); border: 1px solid rgba(34,211,238,0.3); }
+    .feat-badge.ai { background: rgba(167,139,250,0.12); color: var(--violet); border: 1px solid rgba(167,139,250,0.3); }
+    .feat-badge.new { background: rgba(61,127,255,0.12); color: var(--blue-bright); border: 1px solid rgba(61,127,255,0.3); }
 
-    .feature-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .feature-card p { color: #cbd5e6; font-size: 0.9rem; }
-
-    /* TOOLS BANNER */
-    .tools-banner {
-      background: linear-gradient(125deg, #1e1a3a, #0f0c24);
+    /* ===== AI NOTES SECTION ===== */
+    .ai-notes-section {
+      background: rgba(10,13,30,0.6);
+      border: 1px solid rgba(167,139,250,0.25);
       border-radius: 2rem;
       padding: 2rem;
       margin: 2rem 0 3rem;
+      position: relative; overflow: hidden; z-index: 5;
+    }
+    .ai-notes-section::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(167,139,250,0.5), var(--cyan), transparent);
+    }
+
+    .ai-notes-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .ai-notes-title {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ai-notes-title .icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(34,211,238,0.2));
+      border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; color: var(--violet);
+    }
+    .ai-notes-title h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .ai-notes-title span { font-size: 0.75rem; color: var(--muted); }
+
+    .ai-generate-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0.5rem 1.2rem;
+      background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(34,211,238,0.1));
+      border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 40px; font-size: 0.8rem; font-weight: 600; color: var(--violet);
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .ai-generate-btn:hover { background: rgba(167,139,250,0.2); transform: scale(1.03); }
+
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+
+    .note-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 1.2rem; padding: 1.2rem;
+      transition: all 0.2s; cursor: pointer;
+      position: relative;
+    }
+    .note-card:hover { border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.04); }
+    .note-card.ai-powered { border-color: rgba(167,139,250,0.2); }
+    .note-card.ai-powered::before {
+      content: '✦ AI';
+      position: absolute; top: 10px; right: 12px;
+      font-size: 0.6rem; font-weight: 700; color: var(--violet); letter-spacing: 0.06em;
+    }
+
+    .note-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.7rem; }
+    .note-card-icon { font-size: 1rem; color: var(--cyan); }
+    .note-card-title { font-size: 0.85rem; font-weight: 600; }
+    .note-card-body { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+    .note-card-body b { color: var(--text); }
+
+    /* Editable note */
+    .note-editable-area {
+      width: 100%; min-height: 80px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(61,127,255,0.25);
+      border-radius: 10px; padding: 0.7rem 0.9rem;
+      color: var(--text); font-family: inherit; font-size: 0.82rem;
+      resize: vertical; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 1.6; position: relative; z-index: 20; cursor: text;
+    }
+    .note-editable-area:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(61,127,255,0.12); background: rgba(61,127,255,0.07); }
+    .note-editable-area::placeholder { color: #4a5568; }
+
+    /* ===== SECURITY BANNER ===== */
+    .security-banner {
+      background: linear-gradient(125deg, rgba(17,14,48,0.8), rgba(8,10,25,0.9));
+      border-radius: 2rem;
+      padding: 1.8rem 2rem;
+      margin: 1rem 0 3rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 1.5rem;
-      border: 1px solid #3b82f6;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border: 1px solid rgba(61,127,255,0.3);
+      box-shadow: 0 0 40px -10px rgba(61,127,255,0.15);
     }
-
-    .banner-text h3 {
-      font-size: 1.6rem;
-      font-weight: 700;
+    .banner-left { display: flex; align-items: center; gap: 14px; }
+    .banner-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, rgba(61,127,255,0.2), rgba(99,102,241,0.2));
+      border: 1px solid rgba(61,127,255,0.35);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; color: var(--blue);
     }
+    .banner-info h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+    .banner-info p { font-size: 0.82rem; color: var(--muted); }
+    .banner-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--blue-bright); }
+    .stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 
-    .banner-text p { color: #94a3b8; margin-top: 4px; }
-
-    .mini-btn {
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid #3b82f6;
-      padding: 0.8rem 1.8rem;
-      border-radius: 40px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: 0.2s;
-      cursor: pointer;
-      color: white;
+    .learn-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0.7rem 1.5rem;
+      background: rgba(61,127,255,0.12);
+      border: 1px solid rgba(61,127,255,0.4);
+      border-radius: 40px; font-size: 0.82rem; font-weight: 600; color: var(--blue-bright);
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
     }
+    .learn-btn:hover { background: rgba(61,127,255,0.2); transform: scale(1.03); }
 
-    .mini-btn:hover {
-      background: #3b82f6;
-      transform: scale(1.02);
+    /* ===== FOOTER ===== */
+    .footer {
+      margin-top: 4rem; padding: 2rem 0;
+      border-top: 1px solid rgba(61,127,255,0.15);
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;
     }
+    .footer-logo { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--blue-bright); }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; font-weight: 500; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--blue-bright); }
+    .footer-copy { font-size: 0.75rem; color: #4a5568; }
 
-    /* FOOTER */
-    .footer-links {
-      margin-top: 4rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(59, 130, 246, 0.4);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .links-group { display: flex; flex-wrap: wrap; gap: 1.5rem; }
-    .links-group a {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 500;
-      transition: 0.2s;
-    }
-    .links-group a:hover { color: #3b82f6; }
-
-    .copyright { font-size: 0.8rem; color: #8b9dc3; }
-
-    /* MODAL */
+    /* ===== MODAL BASE ===== */
     .modal-overlay {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.82);
       backdrop-filter: blur(20px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      visibility: hidden;
-      opacity: 0;
-      transition: visibility 0.2s, opacity 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; visibility: hidden; opacity: 0;
+      transition: visibility 0.25s, opacity 0.25s;
     }
-
     .modal-overlay.active { visibility: visible; opacity: 1; }
 
     .modal-card {
-      background: linear-gradient(135deg, #111827, #0a0f1c);
-      border-radius: 2rem;
-      width: 90%;
-      max-width: 500px;
-      border: 1px solid #3b82f6;
-      box-shadow: 0 30px 50px rgba(59,130,246,0.3);
+      background: linear-gradient(135deg, #0e1225, #090c1d);
+      border-radius: 2rem; width: 90%; max-width: 500px;
+      border: 1px solid rgba(61,127,255,0.4);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
       overflow: hidden;
-      animation: fadeUp 0.3s ease;
+      animation: slideUp 0.3s ease;
     }
+    @keyframes slideUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .modal-header {
+    .modal-head {
       padding: 1.2rem 1.5rem;
-      background: rgba(59, 130, 246, 0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #3b82f6;
+      background: rgba(61,127,255,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(61,127,255,0.25);
     }
+    .modal-head h3 { font-family: 'Syne', sans-serif; font-weight: 700; color: #bfdbfe; font-size: 1rem; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; transition: color 0.2s; line-height: 1; }
+    .modal-close:hover { color: white; }
 
-    .modal-header h3 { font-weight: 700; color: #bfdbfe; }
-
-    .close-modal {
-      background: none; border: none;
-      color: white; font-size: 1.8rem;
-      cursor: pointer; transition: 0.2s;
-    }
-
-    .close-modal:hover { color: #3b82f6; }
-
-    .modal-body {
-      padding: 2rem 1.8rem;
-      text-align: center;
-    }
-
-    .modal-body p { color: #94a3b8; margin-bottom: 1.5rem; }
-
+    .modal-body { padding: 2rem 1.8rem; text-align: center; }
+    .modal-body p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.7; }
     .modal-upload-btn {
-      background: linear-gradient(105deg, #2563eb, #4f46e5);
-      border: none;
-      padding: 1rem 2.5rem;
-      border-radius: 40px;
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
+      background: linear-gradient(105deg, #2563eb, var(--indigo));
+      border: none; padding: 0.9rem 2.2rem; border-radius: 40px;
+      color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 10px;
+      transition: 0.2s; font-family: inherit;
+      box-shadow: 0 8px 24px rgba(61,127,255,0.4);
     }
+    .modal-upload-btn:hover { transform: scale(1.04); box-shadow: 0 14px 30px rgba(61,127,255,0.5); }
 
-    .modal-upload-btn:hover { transform: scale(1.03); }
-
-    /* TERMS MODAL */
+    /* Terms modal */
     .terms-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(18px);
       z-index: 1100;
-      align-items: center;
-      justify-content: center;
+      display: none; align-items: center; justify-content: center;
     }
+    .terms-card {
+      background: linear-gradient(135deg, #0e1225, #090c1d);
+      border-radius: 2rem; max-width: 460px; width: 90%; padding: 2.2rem;
+      border: 1px solid rgba(61,127,255,0.4);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s ease;
+    }
+    .terms-card h2 { font-family: 'Syne', sans-serif; color: var(--blue-bright); margin-bottom: 0.5rem; font-size: 1.4rem; }
+    .terms-card p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.2rem; line-height: 1.6; }
+    .terms-check { display: flex; gap: 12px; align-items: flex-start; margin: 1.4rem 0; color: #ccc; font-size: 0.88rem; }
+    .terms-check input[type="checkbox"] { accent-color: var(--blue); margin-top: 2px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+    .terms-continue {
+      background: linear-gradient(105deg, #2563eb, var(--indigo));
+      width: 100%; padding: 0.9rem; border: none; border-radius: 40px;
+      color: white; font-weight: 700; cursor: pointer;
+      font-family: inherit; font-size: 0.95rem;
+      transition: 0.2s; box-shadow: 0 8px 24px rgba(61,127,255,0.35);
+    }
+    .terms-continue:hover { box-shadow: 0 14px 30px rgba(61,127,255,0.5); transform: translateY(-1px); }
 
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(0);
+      background: linear-gradient(135deg, #1a2a5a, #0f1a3d);
+      color: white; padding: 0.75rem 1.6rem;
+      border-radius: 60px; font-size: 0.88rem; font-weight: 500;
+      z-index: 2000; border: 1px solid rgba(61,127,255,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      white-space: nowrap; pointer-events: none;
+      animation: toastIn 0.3s ease;
+    }
+    @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 700px) {
       .hero h2 { font-size: 2.2rem; }
-      .navbar { border-radius: 50px; padding: 0.8rem 1.2rem; }
-      .features { gap: 1rem; }
-      .footer-links { flex-direction: column; text-align: center; }
-      .links-group { justify-content: center; }
+      .navbar { border-radius: 20px; padding: 0.8rem 1.2rem; }
+      .nav-tabs { display: none; }
+      .container { padding: 1.5rem 1.2rem; }
+      .features { grid-template-columns: repeat(2, 1fr); }
+      .notes-grid { grid-template-columns: 1fr; }
+      .options-grid { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+      .banner-stats { justify-content: center; }
     }
 
-    button { font-family: inherit; }
+    button, input, select, textarea { font-family: inherit; }
   </style>
 </head>
 <body>
+
+<!-- BG ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
 <div class="container">
 
   <!-- NAVBAR -->
-  <div class="navbar">
+  <nav class="navbar">
     <div class="logo">
-      <h1>Edipee</h1>
-      <span>edit · convert · compress</span>
+      <div class="logo-icon"><i class="fas fa-file-pdf"></i></div>
+      <div class="logo-text">
+        <h1>Edi</h1>
+        <span>edit · convert · compress</span>
+      </div>
     </div>
-    <div class="tagline">
-      <i class="fas fa-file-pdf"></i> Free PDF Editor
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="setTab(this)">Editor</div>
+      <div class="nav-tab" onclick="setTab(this)">Compress</div>
+      <div class="nav-tab" onclick="setTab(this)">Convert</div>
+      <div class="nav-tab" onclick="setTab(this)">Sign</div>
+      <div class="nav-tab" onclick="setTab(this)">Merge</div>
     </div>
-  </div>
+    <div class="ai-badge">
+      <div class="ai-dot"></div>
+      AI-Powered
+    </div>
+  </nav>
 
   <!-- HERO -->
-  <div class="hero">
-    <div class="hero-badge">
-      <i class="fas fa-bolt"></i> No signup · 100% free · Works in browser
+  <section class="hero">
+    <div class="hero-pill">
+      <i class="fas fa-bolt"></i>
+      No signup &nbsp;·&nbsp; 100% free &nbsp;·&nbsp; Works in browser
     </div>
-    <h2>Edit PDFs instantly, no hassle</h2>
-    <div class="hero-desc">
-      Merge, compress, convert, sign and edit your PDFs — all in one place, completely free.
+    <h2>Edit PDFs with the power of AI</h2>
+    <p class="hero-sub">
+      Merge, compress, convert, sign and annotate your PDFs — all in one place, powered by AI. Completely free.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" id="openEditorBtn">
+        <i class="fas fa-file-upload"></i> Upload PDF to Start
+      </button>
+      <button class="btn-secondary" onclick="showToast('✨ Watch demo coming soon!')">
+        <i class="fas fa-play-circle"></i> Watch Demo
+      </button>
     </div>
-    <button class="btn-start" id="openEditorBtn">
-      <i class="fas fa-file-upload"></i> Upload PDF to Start
-    </button>
+  </section>
+
+  <!-- UPLOAD ZONE -->
+  <div class="upload-zone" id="dropZone" onclick="document.getElementById('pdfInput').click()">
+    <input type="file" id="pdfInput" accept=".pdf,.doc,.docx,.png,.jpg,.xlsx" />
+    <div class="upload-icon-wrap"><i class="fas fa-cloud-upload-alt"></i></div>
+    <h3>Drag & Drop your file here</h3>
+    <p>or click to browse &nbsp;·&nbsp; Max 50MB</p>
+    <div class="upload-formats">
+      <span class="fmt-chip">PDF</span>
+      <span class="fmt-chip">DOCX</span>
+      <span class="fmt-chip">PNG</span>
+      <span class="fmt-chip">JPG</span>
+      <span class="fmt-chip">XLSX</span>
+    </div>
   </div>
 
-  <!-- DRAG & DROP UPLOAD -->
-  <div class="upload-area" id="dropZone" onclick="document.getElementById('pdfInput').click()">
-    <input type="file" id="pdfInput" accept=".pdf" />
-    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-    <h3>Drag & Drop your PDF here</h3>
-    <p>or click to browse · PDF files only · Max 50MB</p>
+  <!-- TOOL OPTIONS PANEL -->
+  <div class="options-panel">
+    <div class="options-header">
+      <h3><i class="fas fa-sliders-h" style="color:var(--blue);margin-right:8px"></i>Editor Options</h3>
+      <span class="tag"><i class="fas fa-magic"></i> All Enabled</span>
+    </div>
+    <div class="options-grid">
+
+      <!-- Toggles -->
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-compress-arrows-alt opt-icon"></i>
+          <span class="opt-label">Smart Compress</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-object-group opt-icon"></i>
+          <span class="opt-label">Merge PDFs</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-cut opt-icon"></i>
+          <span class="opt-label">Split Pages</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-signature opt-icon"></i>
+          <span class="opt-label">Digital Sign</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-robot opt-icon" style="color:var(--violet)"></i>
+          <span class="opt-label">AI Summarise</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-highlighter opt-icon" style="color:#fbbf24"></i>
+          <span class="opt-label">Annotate</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-lock opt-icon" style="color:#34d399"></i>
+          <span class="opt-label">Password Protect</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-water opt-icon"></i>
+          <span class="opt-label">Watermark</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-redo-alt opt-icon"></i>
+          <span class="opt-label">Rotate Pages</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="option-item active" onclick="toggleOpt(this)">
+        <div class="opt-left">
+          <i class="fas fa-eye-slash opt-icon" style="color:#f87171"></i>
+          <span class="opt-label">Redact Text</span>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <!-- Editable fields -->
+      <div class="option-editable">
+        <label>Output File Name</label>
+        <input type="text" placeholder="my-document" value="edited-file" id="outputName" />
+      </div>
+
+      <div class="option-editable">
+        <label>Convert To</label>
+        <select id="convertFormat">
+          <option>Keep as PDF</option>
+          <option>Word (.docx)</option>
+          <option>Excel (.xlsx)</option>
+          <option>JPG Image</option>
+          <option>PNG Image</option>
+          <option>Plain Text</option>
+        </select>
+      </div>
+
+      <div class="option-editable">
+        <label>Watermark Text</label>
+        <input type="text" placeholder="e.g. CONFIDENTIAL" value="Edi · edi.app" id="watermarkText" />
+      </div>
+
+      <div class="option-editable">
+        <label>Password (optional)</label>
+        <input type="password" placeholder="Set PDF password..." id="pdfPassword" />
+      </div>
+
+      <!-- Compression slider -->
+      <div class="option-slider" style="grid-column: span 2;">
+        <label>
+          Compression Level
+          <span id="compLevelLabel">72%</span>
+        </label>
+        <input type="range" min="10" max="100" value="72" id="compLevel"
+          oninput="document.getElementById('compLevelLabel').textContent = this.value + '%'" />
+      </div>
+
+    </div>
   </div>
 
   <!-- FEATURES -->
+  <h2 class="section-title">Everything you need</h2>
   <div class="features">
-    <div class="feature-card">
-      <div class="icon-circle"><i class="fas fa-compress-arrows-alt"></i></div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon"><i class="fas fa-compress-arrows-alt"></i></div>
       <h3>Compress PDF</h3>
-      <p>Reduce file size without losing quality.</p>
+      <p>Shrink file size with no visible quality loss.</p>
+      <span class="feat-badge live">Live</span>
     </div>
-    <div class="feature-card">
-      <div class="icon-circle"><i class="fas fa-object-group"></i></div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon"><i class="fas fa-object-group"></i></div>
       <h3>Merge PDFs</h3>
-      <p>Combine multiple PDFs into one file.</p>
+      <p>Combine multiple PDFs into one clean file.</p>
+      <span class="feat-badge live">Live</span>
     </div>
-    <div class="feature-card">
-      <div class="icon-circle"><i class="fas fa-cut"></i></div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon"><i class="fas fa-cut"></i></div>
       <h3>Split PDF</h3>
-      <p>Extract pages or split into multiple files.</p>
+      <p>Extract pages or split into separate files.</p>
+      <span class="feat-badge live">Live</span>
     </div>
-    <div class="feature-card">
-      <div class="icon-circle"><i class="fas fa-exchange-alt"></i></div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon"><i class="fas fa-exchange-alt"></i></div>
       <h3>Convert PDF</h3>
       <p>PDF to Word, Excel, JPG and more.</p>
+      <span class="feat-badge new">New</span>
     </div>
-    <div class="feature-card">
-      <div class="icon-circle"><i class="fas fa-signature"></i></div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon"><i class="fas fa-signature"></i></div>
       <h3>Sign PDF</h3>
-      <p>Add your signature digitally in seconds.</p>
+      <p>Add your digital signature in seconds.</p>
+      <span class="feat-badge live">Live</span>
+    </div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon" style="color:var(--violet)"><i class="fas fa-robot"></i></div>
+      <h3>AI Summarise</h3>
+      <p>Get an instant smart summary of any PDF.</p>
+      <span class="feat-badge ai">AI</span>
+    </div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon" style="color:#fbbf24"><i class="fas fa-highlighter"></i></div>
+      <h3>Annotate</h3>
+      <p>Highlight, comment and mark up with ease.</p>
+      <span class="feat-badge new">New</span>
+    </div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon" style="color:#34d399"><i class="fas fa-lock"></i></div>
+      <h3>Protect PDF</h3>
+      <p>Password-lock your documents securely.</p>
+      <span class="feat-badge live">Live</span>
+    </div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon"><i class="fas fa-water"></i></div>
+      <h3>Watermark</h3>
+      <p>Add custom text or logo watermarks.</p>
+      <span class="feat-badge new">New</span>
+    </div>
+    <div class="feature-card" onclick="featureClick(this)">
+      <div class="feat-icon" style="color:#f87171"><i class="fas fa-eye-slash"></i></div>
+      <h3>Redact</h3>
+      <p>Permanently hide sensitive information.</p>
+      <span class="feat-badge ai">AI</span>
     </div>
   </div>
 
-  <!-- TOOLS BANNER -->
-  <div class="tools-banner">
-    <div class="banner-text">
-      <h3><i class="fas fa-lock" style="color:#3b82f6;"></i> Secure & Private</h3>
-      <p>Your files are processed in browser — never uploaded to any server</p>
+  <!-- AI NOTES -->
+  <div class="ai-notes-section">
+    <div class="ai-notes-header">
+      <div class="ai-notes-title">
+        <div class="icon"><i class="fas fa-brain"></i></div>
+        <div>
+          <h3>AI-Powered Notes</h3>
+          <span>Smart insights about your PDF workflow</span>
+        </div>
+      </div>
+      <button class="ai-generate-btn" onclick="regenerateNotes()">
+        <i class="fas fa-sync-alt"></i> Regenerate
+      </button>
     </div>
-    <div class="mini-btn" id="learnMoreBtn">
-      <i class="fas fa-shield-alt"></i> Learn More
-      <i class="fas fa-arrow-right"></i>
+    <div class="notes-grid" id="notesGrid">
+
+      <div class="note-card ai-powered">
+        <div class="note-card-header">
+          <i class="fas fa-lightbulb note-card-icon"></i>
+          <span class="note-card-title">Pro Tip</span>
+        </div>
+        <div class="note-card-body">
+          Use <b>Smart Compress</b> before sharing — it reduces file size by up to <b>80%</b> while keeping text crystal clear.
+        </div>
+      </div>
+
+      <div class="note-card ai-powered">
+        <div class="note-card-header">
+          <i class="fas fa-shield-alt note-card-icon" style="color:#34d399"></i>
+          <span class="note-card-title">Privacy Note</span>
+        </div>
+        <div class="note-card-body">
+          Your files are <b>processed locally</b> in your browser — nothing is uploaded to any server. Your data stays yours.
+        </div>
+      </div>
+
+      <div class="note-card ai-powered">
+        <div class="note-card-header">
+          <i class="fas fa-robot note-card-icon" style="color:var(--violet)"></i>
+          <span class="note-card-title">AI Insight</span>
+        </div>
+        <div class="note-card-body">
+          Enable <b>AI Summarise</b> to get a structured overview of any document — perfect for contracts and reports.
+        </div>
+      </div>
+
+      <div class="note-card ai-powered">
+        <div class="note-card-header">
+          <i class="fas fa-star note-card-icon" style="color:#fbbf24"></i>
+          <span class="note-card-title">Did You Know?</span>
+        </div>
+        <div class="note-card-body">
+          <b>Merge + Compress</b> together is the most popular workflow on Edi — combine docs then shrink in one go.
+        </div>
+      </div>
+
+      <!-- User editable note -->
+      <div class="note-card" style="border-color:rgba(61,127,255,0.25); display:flex; flex-direction:column; gap:8px;">
+        <div class="note-card-header">
+          <i class="fas fa-pencil-alt note-card-icon" style="color:var(--blue-bright)"></i>
+          <span class="note-card-title">Your Note</span>
+        </div>
+        <textarea class="note-editable-area" placeholder="Add your own note or reminder here..."></textarea>
+      </div>
+
     </div>
+  </div>
+
+  <!-- SECURITY BANNER -->
+  <div class="security-banner">
+    <div class="banner-left">
+      <div class="banner-icon"><i class="fas fa-shield-alt"></i></div>
+      <div class="banner-info">
+        <h3>Secure & 100% Private</h3>
+        <p>Files are processed in your browser — never uploaded to any server</p>
+      </div>
+    </div>
+    <div class="banner-stats">
+      <div class="stat">
+        <div class="stat-num">50MB</div>
+        <div class="stat-label">Max File</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Free</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Signups</div>
+      </div>
+    </div>
+    <button class="learn-btn" onclick="showToast('🔒 All processing happens in your browser — zero server uploads')">
+      <i class="fas fa-arrow-right"></i> Learn More
+    </button>
   </div>
 
   <!-- FOOTER -->
-  <div class="footer-links">
-    <div class="links-group">
+  <div class="footer">
+    <div class="footer-logo">Edi</div>
+    <div class="footer-links">
       <a href="terms.html">Terms & Conditions</a>
       <a href="privacy.html">Privacy Policy</a>
       <a href="contact.html">Contact</a>
+      <a href="#" onclick="showToast('📖 Docs coming soon!')">Docs</a>
     </div>
-    <div class="copyright">
-      © 2026 Edipee · Free PDF Editor · All rights reserved
-    </div>
+    <div class="footer-copy">© 2026 Edi · AI PDF Editor · All rights reserved</div>
   </div>
 
 </div>
@@ -506,15 +965,13 @@
 <!-- UPLOAD MODAL -->
 <div id="uploadModal" class="modal-overlay">
   <div class="modal-card">
-    <div class="modal-header">
-      <h3><i class="fas fa-file-pdf"></i> Edipee · PDF Editor</h3>
-      <button class="close-modal" id="closeUploadModal">&times;</button>
+    <div class="modal-head">
+      <h3><i class="fas fa-file-pdf"></i> &nbsp;Edi · PDF Editor</h3>
+      <button class="modal-close" id="closeUploadModal">&times;</button>
     </div>
     <div class="modal-body">
-      <div style="font-size: 3rem; color: #3b82f6; margin-bottom: 1rem;">
-        <i class="fas fa-file-pdf"></i>
-      </div>
-      <p>Upload your PDF file to start editing. Choose from compress, merge, split, convert or sign.</p>
+      <div style="font-size:3rem;color:var(--blue);margin-bottom:1.2rem;"><i class="fas fa-file-pdf"></i></div>
+      <p>Upload your PDF to start editing.<br>Choose from compress, merge, split, convert, sign and more.</p>
       <button class="modal-upload-btn" onclick="document.getElementById('pdfInput').click()">
         <i class="fas fa-upload"></i> Choose PDF File
       </button>
@@ -523,117 +980,156 @@
 </div>
 
 <!-- TERMS MODAL -->
-<div id="flowModal" class="terms-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(16px); z-index:1100; align-items:center; justify-content:center;">
-  <div style="background:linear-gradient(135deg,#111827,#0a0f1c); border-radius:2rem; max-width:480px; width:90%; padding:2rem; border:1px solid #3b82f6;">
-    <button onclick="closeModal('flowModal')" style="float:right; background:none; border:none; color:white; font-size:28px; cursor:pointer;">✕</button>
-    <h2 style="color:#3b82f6; margin-top:0;">Before You Continue</h2>
-    <label style="display:flex; gap:12px; margin:20px 0; color:#ccc;">
-      <input type="checkbox" id="agreeAll"/> I agree to the Terms & Privacy Policy
-    </label>
-    <button onclick="enterEditor()" style="background:#3b82f6; width:100%; padding:12px; border:none; border-radius:40px; color:white; font-weight:bold; cursor:pointer; font-family:inherit;">Continue to Editor</button>
+<div id="flowModal" class="terms-modal">
+  <div class="terms-card">
+    <button onclick="closeTerms()" style="float:right;background:none;border:none;color:var(--muted);font-size:1.6rem;cursor:pointer;line-height:1;margin-bottom:.5rem;">✕</button>
+    <h2>Before You Continue</h2>
+    <p>Edi is a free, browser-based PDF editor. Your files never leave your device.</p>
+    <div class="terms-check">
+      <input type="checkbox" id="agreeAll" />
+      <span>I agree to the <a href="terms.html" style="color:var(--blue-bright);text-decoration:none;">Terms & Conditions</a> and <a href="privacy.html" style="color:var(--blue-bright);text-decoration:none;">Privacy Policy</a></span>
+    </div>
+    <button class="terms-continue" onclick="enterEditor()">Continue to Editor</button>
   </div>
 </div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-  function showModal(id) {
-    const m = document.getElementById(id);
-    if (m) { m.style.display = "flex"; requestAnimationFrame(() => m.style.opacity = "1"); }
+  // Nav tabs
+  function setTab(el) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    showToast('📂 ' + el.textContent + ' mode activated');
   }
 
-  function closeModal(id) {
+  // Toggle options
+  function toggleOpt(el) {
+    el.classList.toggle('active');
+    const t = el.querySelector('.toggle');
+    t.classList.toggle('on');
+    const label = el.querySelector('.opt-label').textContent;
+    showToast((t.classList.contains('on') ? '✅ ' : '❌ ') + label + (t.classList.contains('on') ? ' enabled' : ' disabled'));
+  }
+
+  // Feature card click
+  function featureClick(card) {
+    const title = card.querySelector('h3').textContent;
+    showToast('✨ ' + title + ' — click Upload to use it!');
+    card.style.transform = 'scale(0.97)';
+    setTimeout(() => card.style.transform = '', 200);
+  }
+
+  // Modal helpers
+  function showModal(id) {
     const m = document.getElementById(id);
-    if (m) m.style.display = "none";
+    if (m) { m.classList.add('active'); }
+  }
+  function hideModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('active');
+  }
+
+  document.getElementById('openEditorBtn').addEventListener('click', () => {
+    document.getElementById('flowModal').style.display = 'flex';
+  });
+
+  function closeTerms() {
+    document.getElementById('flowModal').style.display = 'none';
   }
 
   function enterEditor() {
-    if (!document.getElementById("agreeAll").checked) {
-      alert("Please agree to the Terms before continuing.");
+    if (!document.getElementById('agreeAll').checked) {
+      showToast('⚠️ Please agree to the Terms first');
       return;
     }
-    closeModal("flowModal");
-    showModal("uploadModal");
+    closeTerms();
+    showModal('uploadModal');
   }
 
-  // Open editor btn
-  document.getElementById("openEditorBtn").addEventListener("click", () => {
-    showModal("flowModal");
+  document.getElementById('closeUploadModal').addEventListener('click', () => hideModal('uploadModal'));
+  document.getElementById('uploadModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('uploadModal')) hideModal('uploadModal');
   });
 
-  // Close upload modal
-  document.getElementById("closeUploadModal").addEventListener("click", () => {
-    document.getElementById("uploadModal").classList.remove("active");
-  });
-
-  // Upload modal active class
-  document.getElementById("uploadModal").addEventListener("click", (e) => {
-    if (e.target === document.getElementById("uploadModal"))
-      document.getElementById("uploadModal").classList.remove("active");
-  });
-
-  // Drop zone drag events
-  const dropZone = document.getElementById("dropZone");
-  dropZone.addEventListener("dragover", (e) => {
+  // Drag & Drop
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => {
     e.preventDefault();
-    dropZone.style.borderColor = "#3b82f6";
-    dropZone.style.background = "rgba(59,130,246,0.1)";
+    dropZone.classList.add('drag-over');
   });
-
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.style.borderColor = "rgba(59,130,246,0.5)";
-    dropZone.style.background = "rgba(15,23,42,0.6)";
-  });
-
-  dropZone.addEventListener("drop", (e) => {
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
     e.preventDefault();
-    dropZone.style.borderColor = "rgba(59,130,246,0.5)";
-    dropZone.style.background = "rgba(15,23,42,0.6)";
+    dropZone.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
-    if (file && file.type === "application/pdf") {
-      handleFile(file);
-    } else {
-      showToast("⚠️ Please drop a PDF file");
-    }
+    if (file) handleFile(file);
+    else showToast('⚠️ Please drop a valid file');
   });
-
-  document.getElementById("pdfInput").addEventListener("change", (e) => {
+  document.getElementById('pdfInput').addEventListener('change', e => {
     if (e.target.files[0]) handleFile(e.target.files[0]);
   });
 
   function handleFile(file) {
-    showToast("✅ " + file.name + " loaded! Editor coming soon.");
+    const name = file.name.length > 28 ? file.name.slice(0,25)+'...' : file.name;
+    showToast('✅ ' + name + ' loaded!');
+    hideModal('uploadModal');
+    const fmt = document.getElementById('convertFormat').value;
+    const outName = document.getElementById('outputName').value || 'edited-file';
+    dropZone.innerHTML = `
+      <div style="font-size:2.5rem;color:var(--blue);margin-bottom:1rem;"><i class="fas fa-check-circle" style="color:#34d399"></i></div>
+      <h3 style="color:#34d399">File Ready: ${name}</h3>
+      <p style="margin-top:.4rem">Output: <b style="color:var(--blue-bright)">${outName}</b> · Format: <b style="color:var(--cyan)">${fmt}</b></p>
+      <p style="margin-top:1rem;color:#4a5568;font-size:.8rem">Click to replace file</p>
+    `;
+    dropZone.onclick = () => document.getElementById('pdfInput').click();
   }
 
-  document.getElementById("learnMoreBtn").addEventListener("click", () => {
-    showToast("🔒 Files never leave your device — 100% private");
-  });
+  // AI Notes regen
+  const notePool = [
+    { icon:'fas fa-lightbulb', color:'var(--cyan)', title:'Pro Tip', body:'Use <b>Smart Compress</b> before sharing — it reduces file size by up to <b>80%</b> while keeping text crystal clear.' },
+    { icon:'fas fa-shield-alt', color:'#34d399', title:'Privacy Note', body:'Your files are <b>processed locally</b> in your browser — nothing is uploaded to any server. Your data stays yours.' },
+    { icon:'fas fa-robot', color:'var(--violet)', title:'AI Insight', body:'Enable <b>AI Summarise</b> to get a structured overview of any document — perfect for contracts and reports.' },
+    { icon:'fas fa-star', color:'#fbbf24', title:'Did You Know?', body:'<b>Merge + Compress</b> together is the most popular workflow on Edi — combine docs then shrink in one go.' },
+    { icon:'fas fa-magic', color:'var(--blue-bright)', title:'Quick Tip', body:'You can <b>drag multiple files</b> onto the upload zone to merge them automatically into one PDF.' },
+    { icon:'fas fa-clock', color:'#f87171', title:'Save Time', body:'Use the <b>Password Protect</b> feature to lock sensitive contracts before sending via email.' },
+    { icon:'fas fa-eye', color:'var(--violet)', title:'AI Redact', body:'The AI <b>Redact</b> tool automatically finds and hides personal info like emails, phone numbers and IDs.' },
+    { icon:'fas fa-chart-bar', color:'var(--cyan)', title:'Size Insight', body:'Most PDFs can be compressed to under <b>1MB</b> for easy email sharing without losing any visible quality.' },
+  ];
 
-  // Feature card clicks
-  document.querySelectorAll(".feature-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const title = card.querySelector("h3")?.innerText || "feature";
-      showToast("✨ " + title + " — coming soon on Edipee!");
-    });
-  });
+  function regenerateNotes() {
+    const grid = document.getElementById('notesGrid');
+    const shuffled = [...notePool].sort(() => Math.random() - 0.5).slice(0, 4);
+    const userNote = `
+      <div class="note-card" style="border-color:rgba(61,127,255,0.25);display:flex;flex-direction:column;gap:8px;">
+        <div class="note-card-header">
+          <i class="fas fa-pencil-alt note-card-icon" style="color:var(--blue-bright)"></i>
+          <span class="note-card-title">Your Note</span>
+        </div>
+        <textarea class="note-editable-area" placeholder="Add your own note or reminder here..."></textarea>
+      </div>`;
+    grid.innerHTML = shuffled.map(n => `
+      <div class="note-card ai-powered">
+        <div class="note-card-header">
+          <i class="${n.icon} note-card-icon" style="color:${n.color}"></i>
+          <span class="note-card-title">${n.title}</span>
+        </div>
+        <div class="note-card-body">${n.body}</div>
+      </div>`).join('') + userNote;
+    showToast('🤖 AI notes refreshed!');
+  }
 
+  // Toast
   function showToast(text) {
-    const toast = document.createElement("div");
-    toast.innerText = text;
-    Object.assign(toast.style, {
-      position: "fixed", bottom: "30px", left: "50%",
-      transform: "translateX(-50%)",
-      background: "#2563eb", color: "white",
-      padding: "12px 24px", borderRadius: "60px",
-      fontSize: "0.9rem", fontWeight: "500",
-      zIndex: "1200", boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
-      border: "1px solid #93c5fd", whiteSpace: "nowrap"
-    });
-    document.body.appendChild(toast);
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = text;
+    document.body.appendChild(t);
     setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transition = "0.3s";
-      setTimeout(() => toast.remove(), 300);
-    }, 2500);
+      t.style.transition = '0.3s ease';
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(10px)';
+      setTimeout(() => t.remove(), 350);
+    }, 2600);
   }
 </script>
 </body>
