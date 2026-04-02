@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edipee — Edit PDFs Freely</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: radial-gradient(circle at 10% 20%, #0a0c1a, #03050b);
+      font-family: 'Inter', sans-serif;
+      color: #eef2ff;
+      line-height: 1.4;
+      scroll-behavior: smooth;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%; left: -10%;
+      width: 80%; height: 80%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(0,0,0,0) 70%);
+      filter: blur(80px);
+      z-index: 0; pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -5%;
+      width: 70%; height: 70%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 70%);
+      filter: blur(100px);
+      z-index: 0; pointer-events: none;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #1e293b; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      margin-bottom: 3rem;
+      padding: 1rem 1.8rem;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(12px);
+      border-radius: 80px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .logo h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #93c5fd, #3b82f6);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .logo span {
+      font-size: 0.7rem;
+      color: #93c5fd;
+      display: block;
+    }
+
+    .tagline {
+      color: #bfdbfe;
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.2);
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+    }
+
+    /* HERO */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .hero-badge {
+      background: rgba(59, 130, 246, 0.2);
+      padding: 0.5rem 1.5rem;
+      border-radius: 60px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #93c5fd;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      animation: pulseGlow 2s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
+      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    .hero h2 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      max-width: 850px;
+      background: linear-gradient(to right, #ffffff, #bfdbfe, #93c5fd);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    .hero-desc {
+      font-size: 1.2rem;
+      color: #cbd5e6;
+      max-width: 580px;
+      margin-bottom: 2rem;
+    }
+
+    .btn-start {
+      background: linear-gradient(105deg, #2563eb 0%, #4f46e5 100%);
+      padding: 1rem 2.8rem;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-start:hover {
+      transform: scale(1.03) translateY(-3px);
+      box-shadow: 0 18px 30px rgba(59, 130, 246, 0.7);
+    }
+
+    /* UPLOAD AREA */
+    .upload-area {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(16px);
+      border: 2px dashed rgba(59, 130, 246, 0.5);
+      border-radius: 2rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin: 2rem 0 4rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      border-color: #3b82f6;
+      background: rgba(30, 41, 59, 0.7);
+      transform: scale(1.01);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      color: #3b82f6;
+      margin-bottom: 1rem;
+    }
+
+    .upload-area h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-area p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    /* FEATURES */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.8rem;
+      margin: 3rem 0 4rem;
+    }
+
+    .feature-card {
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
+      padding: 1.8rem 1.2rem;
+      text-align: center;
+      transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      box-shadow: 0 15px 35px -10px rgba(0,0,0,0.3);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: #3b82f6;
+      background: rgba(30, 41, 59, 0.7);
+      box-shadow: 0 25px 40px -12px rgba(59, 130, 246, 0.3);
+    }
+
+    .icon-circle {
+      background: linear-gradient(145deg, rgba(59,130,246,0.2), rgba(99,102,241,0.2));
+      width: 70px; height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.2rem;
+      border-radius: 30px;
+      font-size: 2rem;
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      transition: 0.2s;
+    }
+
+    .feature-card:hover .icon-circle {
+      color: white;
+      background: linear-gradient(145deg, #2563eb, #4f46e5);
+      transform: scale(1.05);
+    }
+
+    .feature-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-card p { color: #cbd5e6; font-size: 0.9rem; }
+
+    /* TOOLS BANNER */
+    .tools-banner {
+      background: linear-gradient(125deg, #1e1a3a, #0f0c24);
+      border-radius: 2rem;
+      padding: 2rem;
+      margin: 2rem 0 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      border: 1px solid #3b82f6;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .banner-text h3 {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .banner-text p { color: #94a3b8; margin-top: 4px; }
+
+    .mini-btn {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid #3b82f6;
+      padding: 0.8rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: 0.2s;
+      cursor: pointer;
+      color: white;
+    }
+
+    .mini-btn:hover {
+      background: #3b82f6;
+      transform: scale(1.02);
+    }
+
+    /* FOOTER */
+    .footer-links {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(59, 130, 246, 0.4);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .links-group { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+    .links-group a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .links-group a:hover { color: #3b82f6; }
+
+    .copyright { font-size: 0.8rem; color: #8b9dc3; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+
+    .modal-overlay.active { visibility: visible; opacity: 1; }
+
+    .modal-card {
+      background: linear-gradient(135deg, #111827, #0a0f1c);
+      border-radius: 2rem;
+      width: 90%;
+      max-width: 500px;
+      border: 1px solid #3b82f6;
+      box-shadow: 0 30px 50px rgba(59,130,246,0.3);
+      overflow: hidden;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 1.2rem 1.5rem;
+      background: rgba(59, 130, 246, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #3b82f6;
+    }
+
+    .modal-header h3 { font-weight: 700; color: #bfdbfe; }
+
+    .close-modal {
+      background: none; border: none;
+      color: white; font-size: 1.8rem;
+      cursor: pointer; transition: 0.2s;
+    }
+
+    .close-modal:hover { color: #3b82f6; }
+
+    .modal-body {
+      padding: 2rem 1.8rem;
+      text-align: center;
+    }
+
+    .modal-body p { color: #94a3b8; margin-bottom: 1.5rem; }
+
+    .modal-upload-btn {
+      background: linear-gradient(105deg, #2563eb, #4f46e5);
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 40px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-upload-btn:hover { transform: scale(1.03); }
+
+    /* TERMS MODAL */
+    .terms-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(16px);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 700px) {
+      .hero h2 { font-size: 2.2rem; }
+      .navbar { border-radius: 50px; padding: 0.8rem 1.2rem; }
+      .features { gap: 1rem; }
+      .footer-links { flex-direction: column; text-align: center; }
+      .links-group { justify-content: center; }
+    }
+
+    button { font-family: inherit; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">
+      <h1>Edipee</h1>
+      <span>edit · convert · compress</span>
+    </div>
+    <div class="tagline">
+      <i class="fas fa-file-pdf"></i> Free PDF Editor
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <i class="fas fa-bolt"></i> No signup · 100% free · Works in browser
+    </div>
+    <h2>Edit PDFs instantly, no hassle</h2>
+    <div class="hero-desc">
+      Merge, compress, convert, sign and edit your PDFs — all in one place, completely free.
+    </div>
+    <button class="btn-start" id="openEditorBtn">
+      <i class="fas fa-file-upload"></i> Upload PDF to Start
+    </button>
+  </div>
+
+  <!-- DRAG & DROP UPLOAD -->
+  <div class="upload-area" id="dropZone" onclick="document.getElementById('pdfInput').click()">
+    <input type="file" id="pdfInput" accept=".pdf" />
+    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+    <h3>Drag & Drop your PDF here</h3>
+    <p>or click to browse · PDF files only · Max 50MB</p>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="feature-card">
+      <div class="icon-circle"><i class="fas fa-compress-arrows-alt"></i></div>
+      <h3>Compress PDF</h3>
+      <p>Reduce file size without losing quality.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon-circle"><i class="fas fa-object-group"></i></div>
+      <h3>Merge PDFs</h3>
+      <p>Combine multiple PDFs into one file.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon-circle"><i class="fas fa-cut"></i></div>
+      <h3>Split PDF</h3>
+      <p>Extract pages or split into multiple files.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon-circle"><i class="fas fa-exchange-alt"></i></div>
+      <h3>Convert PDF</h3>
+      <p>PDF to Word, Excel, JPG and more.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon-circle"><i class="fas fa-signature"></i></div>
+      <h3>Sign PDF</h3>
+      <p>Add your signature digitally in seconds.</p>
+    </div>
+  </div>
+
+  <!-- TOOLS BANNER -->
+  <div class="tools-banner">
+    <div class="banner-text">
+      <h3><i class="fas fa-lock" style="color:#3b82f6;"></i> Secure & Private</h3>
+      <p>Your files are processed in browser — never uploaded to any server</p>
+    </div>
+    <div class="mini-btn" id="learnMoreBtn">
+      <i class="fas fa-shield-alt"></i> Learn More
+      <i class="fas fa-arrow-right"></i>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-links">
+    <div class="links-group">
+      <a href="terms.html">Terms & Conditions</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="copyright">
+      © 2026 Edipee · Free PDF Editor · All rights reserved
+    </div>
+  </div>
+
+</div>
+
+<!-- UPLOAD MODAL -->
+<div id="uploadModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-pdf"></i> Edipee · PDF Editor</h3>
+      <button class="close-modal" id="closeUploadModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size: 3rem; color: #3b82f6; margin-bottom: 1rem;">
+        <i class="fas fa-file-pdf"></i>
+      </div>
+      <p>Upload your PDF file to start editing. Choose from compress, merge, split, convert or sign.</p>
+      <button class="modal-upload-btn" onclick="document.getElementById('pdfInput').click()">
+        <i class="fas fa-upload"></i> Choose PDF File
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS MODAL -->
+<div id="flowModal" class="terms-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(16px); z-index:1100; align-items:center; justify-content:center;">
+  <div style="background:linear-gradient(135deg,#111827,#0a0f1c); border-radius:2rem; max-width:480px; width:90%; padding:2rem; border:1px solid #3b82f6;">
+    <button onclick="closeModal('flowModal')" style="float:right; background:none; border:none; color:white; font-size:28px; cursor:pointer;">✕</button>
+    <h2 style="color:#3b82f6; margin-top:0;">Before You Continue</h2>
+    <label style="display:flex; gap:12px; margin:20px 0; color:#ccc;">
+      <input type="checkbox" id="agreeAll"/> I agree to the Terms & Privacy Policy
+    </label>
+    <button onclick="enterEditor()" style="background:#3b82f6; width:100%; padding:12px; border:none; border-radius:40px; color:white; font-weight:bold; cursor:pointer; font-family:inherit;">Continue to Editor</button>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  function showModal(id) {
+    const m = document.getElementById(id);
+    if (m) { m.style.display = "flex"; requestAnimationFrame(() => m.style.opacity = "1"); }
+  }
+
+  function closeModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.style.display = "none";
+  }
+
+  function enterEditor() {
+    if (!document.getElementById("agreeAll").checked) {
+      alert("Please agree to the Terms before continuing.");
+      return;
+    }
+    closeModal("flowModal");
+    showModal("uploadModal");
+  }
+
+  // Open editor btn
+  document.getElementById("openEditorBtn").addEventListener("click", () => {
+    showModal("flowModal");
+  });
+
+  // Close upload modal
+  document.getElementById("closeUploadModal").addEventListener("click", () => {
+    document.getElementById("uploadModal").classList.remove("active");
+  });
+
+  // Upload modal active class
+  document.getElementById("uploadModal").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("uploadModal"))
+      document.getElementById("uploadModal").classList.remove("active");
+  });
+
+  // Drop zone drag events
+  const dropZone = document.getElementById("dropZone");
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#3b82f6";
+    dropZone.style.background = "rgba(59,130,246,0.1)";
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.style.borderColor = "rgba(59,130,246,0.5)";
+    dropZone.style.background = "rgba(15,23,42,0.6)";
+  });
+
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = "rgba(59,130,246,0.5)";
+    dropZone.style.background = "rgba(15,23,42,0.6)";
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === "application/pdf") {
+      handleFile(file);
+    } else {
+      showToast("⚠️ Please drop a PDF file");
+    }
+  });
+
+  document.getElementById("pdfInput").addEventListener("change", (e) => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file) {
+    showToast("✅ " + file.name + " loaded! Editor coming soon.");
+  }
+
+  document.getElementById("learnMoreBtn").addEventListener("click", () => {
+    showToast("🔒 Files never leave your device — 100% private");
+  });
+
+  // Feature card clicks
+  document.querySelectorAll(".feature-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const title = card.querySelector("h3")?.innerText || "feature";
+      showToast("✨ " + title + " — coming soon on Edipee!");
+    });
+  });
+
+  function showToast(text) {
+    const toast = document.createElement("div");
+    toast.innerText = text;
+    Object.assign(toast.style, {
+      position: "fixed", bottom: "30px", left: "50%",
+      transform: "translateX(-50%)",
+      background: "#2563eb", color: "white",
+      padding: "12px 24px", borderRadius: "60px",
+      fontSize: "0.9rem", fontWeight: "500",
+      zIndex: "1200", boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
+      border: "1px solid #93c5fd", whiteSpace: "nowrap"
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transition = "0.3s";
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+</script>
+</body>
+</html>
